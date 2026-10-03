@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: buildflow-postgres
+    environment:
+      POSTGRES_DB: buildflow
+      POSTGRES_USER: buildflow
+      POSTGRES_PASSWORD: buildflow_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - buildflow_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U buildflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: buildflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - buildflow_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: buildflow-minio
+    environment:
+      MINIO_ROOT_USER: buildflow
+      MINIO_ROOT_PASSWORD: buildflow_dev_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - buildflow_minio:/data
+
+volumes:
+  buildflow_pgdata:
+  buildflow_redis:
+  buildflow_minio:
