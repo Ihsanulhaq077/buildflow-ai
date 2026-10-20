@@ -35,6 +35,12 @@ PERMISSIONS = {
     "dailylog.approve": "Reopen submitted daily reports",
     "finance.read": "View financial data",
     "finance.manage": "Manage accounting",
+    "dashboards.read": "View dashboards",
+    "dashboards.manage": "Create/edit/delete dashboards and widgets",
+    "tasks.read": "View tasks",
+    "tasks.manage": "Create/update/delete tasks",
+    "expenses.read": "View expenses",
+    "expenses.manage": "Create/update/delete expenses",
 }
 
 ALL = list(PERMISSIONS)
@@ -43,27 +49,38 @@ ALL = list(PERMISSIONS)
 DEFAULT_ROLES: dict[str, tuple[list[str], int]] = {
     "OWNER": (ALL, 10**12),
     "PROJECT_MANAGER": ([
-        "users.read", "projects.read", "projects.manage", "boq.read", "boq.manage", "budgets.read",
-        "budgets.manage", "requisitions.create", "procurement.read", "procurement.approve", "grn.create",
-        "inventory.read", "inventory.manage", "inventory.issue", "inventory.adjust", "dailylog.submit",
-        "attendance.submit", "finance.read", "workers.manage", "attendance.read", "attendance.approve",
-        "labour.read", "dailylog.read", "dailylog.approve"], 50_000),
+        "users.read", "projects.read", "projects.manage", "boq.read", "boq.manage",
+        "budgets.read", "budgets.manage", "requisitions.create", "procurement.read",
+        "procurement.approve", "grn.create", "inventory.read", "inventory.manage",
+        "inventory.issue", "inventory.adjust", "dailylog.submit", "attendance.submit",
+        "finance.read", "workers.manage", "attendance.read", "attendance.approve",
+        "labour.read", "dailylog.read", "dailylog.approve",
+        "dashboards.read", "dashboards.manage", "tasks.read", "tasks.manage"], 50_000),
     "SITE_ENGINEER": ([
-        "projects.read", "boq.read", "requisitions.create", "procurement.read", "inventory.read",
-        "inventory.issue", "dailylog.submit", "attendance.submit", "attendance.read", "dailylog.read"], 0),
-    "FOREMAN": (["attendance.submit", "attendance.read", "dailylog.submit", "dailylog.read"], 0),
-    "WORKER": ([], 0),
+        "projects.read", "boq.read", "requisitions.create", "procurement.read",
+        "inventory.read", "inventory.issue", "dailylog.submit", "attendance.submit",
+        "attendance.read", "dailylog.read",
+        "dashboards.read", "tasks.read", "tasks.manage"], 0),
+    "FOREMAN": ([
+        "attendance.submit", "attendance.read", "dailylog.submit", "dailylog.read",
+        "dashboards.read", "tasks.read", "tasks.manage"], 0),
+    "WORKER": (["dashboards.read", "tasks.read"], 0),
     "STOREKEEPER": ([
-        "projects.read", "requisitions.create", "procurement.read", "grn.create", "inventory.read",
-        "inventory.manage", "inventory.issue"], 0),
+        "projects.read", "requisitions.create", "procurement.read", "grn.create",
+        "inventory.read", "inventory.manage", "inventory.issue",
+        "dashboards.read", "tasks.read", "tasks.manage"], 0),
     "PROCUREMENT_OFFICER": ([
-        "projects.read", "boq.read", "budgets.read", "requisitions.create", "procurement.read",
-        "procurement.manage", "inventory.read", "inventory.manage"], 0),
+        "projects.read", "boq.read", "budgets.read", "requisitions.create",
+        "procurement.read", "procurement.manage", "inventory.read", "inventory.manage",
+        "dashboards.read", "dashboards.manage", "tasks.read", "tasks.manage"], 0),
     "ACCOUNTANT": ([
-        "projects.read", "boq.read", "budgets.read", "procurement.read", "inventory.read", "finance.read",
-        "finance.manage", "labour.read", "attendance.read"], 0),
-    "HR_ADMIN": (["users.read", "users.manage", "attendance.submit", "attendance.read", "workers.manage",
-                  "labour.read"], 0),
-    "SUBCONTRACTOR": ([], 0),
-    "CLIENT": ([], 0),  # no access until project-level membership exists (later phase)
+        "projects.read", "boq.read", "budgets.read", "procurement.read",
+        "inventory.read", "finance.read", "finance.manage", "labour.read",
+        "attendance.read", "dashboards.read", "dashboards.manage",
+        "tasks.read", "tasks.manage", "expenses.read", "expenses.manage"], 0),
+    "HR_ADMIN": ([
+        "users.read", "users.manage", "attendance.submit", "attendance.read",
+        "workers.manage", "labour.read", "dashboards.read", "tasks.read", "tasks.manage"], 0),
+    "SUBCONTRACTOR": (["dashboards.read", "tasks.read"], 0),
+    "CLIENT": (["dashboards.read"], 0),  # no access until project-level membership exists (later phase)
 }

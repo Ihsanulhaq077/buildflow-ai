@@ -31,6 +31,8 @@ def get_current_user(creds: HTTPAuthorizationCredentials | None = Depends(bearer
 
 def require_permission(code: str):
     def checker(user: User = Depends(get_current_user)) -> User:
+        if user.role and user.role.name == "OWNER":
+            return user
         if code not in {p.code for p in user.role.permissions}:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Permission denied")
         return user
@@ -51,4 +53,6 @@ def get_owned(db, model, obj_id, user: User, code: int = 404):
 
 
 def has_permission(user: User, code: str) -> bool:
+    if user.role and user.role.name == "OWNER":
+        return True
     return code in {p.code for p in user.role.permissions}

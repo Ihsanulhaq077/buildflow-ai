@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+  color: #0d1117;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4ccda;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9aa6b8;
+}
+
+/* Custom components */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-600 text-white font-medium text-sm
+           hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-surface-0 text-ink-900 font-medium text-sm
+           border border-line-1 hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2
+           transition-all duration-150;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-ink-600 font-medium text-sm
+           hover:bg-surface-2 transition-all duration-150;
+  }
+  .card {
+    @apply bg-surface-0 rounded-xl border border-line-0 shadow-card;
+  }
+  .input-field {
+    @apply w-full px-3.5 py-2.5 rounded-lg bg-surface-1 border border-line-0 text-ink-900 text-sm
+           placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+           transition-all duration-150;
+  }
+  .input-error {
+    @apply border-accent-500 focus:ring-accent-400;
+  }
+  .label-text {
+    @apply block text-sm font-medium text-ink-700 mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
+  }
+  .page-header {
+    @apply flex items-center justify-between mb-6;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-ink-900;
+  }
+  .page-subtitle {
+    @apply text-ink-500 text-sm mt-0.5;
+  }
+  .stat-card {
+    @apply bg-surface-0 rounded-xl border border-line-0 p-5 shadow-card;
+  }
+  .divider {
+    @apply h-px bg-line-0;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #c4ccda;
+    border-radius: 3px;
+  }
+}
+
+/* Dark mode */
+.dark {
+  color-scheme: dark;
+}
+.dark body {
+  background: #0d1117;
+  color: #e6edf3;
+}
+.dark .card {
+  background: #161b22;
+  border-color: #21262d;
+}
+.dark .stat-card {
+  background: #161b22;
+  border-color: #21262d;
+}
+.dark .input-field {
+  background: #0d1117;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+.dark .input-field::placeholder {
+  color: #7d8590;
+}
+.dark .btn-secondary {
+  background: #21262d;
+  color: #e6edf3;
+  border-color: #30363d;
+}
+.dark .btn-secondary:hover {
+  background: #30363d;
+}
+.dark .label-text {
+  color: #c9d1d9;
+}
+.dark .divider {
+  background: #21262d;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #30363d;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

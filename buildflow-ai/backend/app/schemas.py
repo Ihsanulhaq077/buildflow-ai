@@ -33,6 +33,10 @@ class UserCreate(BaseModel):
     role_name: str
 
 
+class UserRoleUpdate(BaseModel):
+    role_name: str
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID

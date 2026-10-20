@@ -44,6 +44,33 @@ def record_actual(db: Session, org_id, project_id, amounts_by_cost_code: dict[uu
         _line(db, org_id, project_id, cc).actual_amount += amt
 
 
+def record_actual_soft(db: Session, org_id, project_id,
+                       amounts_by_cost_code: dict[uuid.UUID, Decimal]) -> list[uuid.UUID]:
+    """Post actuals that have already been incurred, tolerating a missing budget line.
+
+    Money that has already been spent must be recordable even when the budget line was
+    never set up. Returns the cost codes that had no approved budget line so the caller
+    can flag them instead of failing the whole operation.
+    """
+    unposted: list[uuid.UUID] = []
+    for cc, amt in amounts_by_cost_code.items():
+        line = _find_line(db, org_id, project_id, cc)
+        if line is None:
+            unposted.append(cc)
+            continue
+        line.actual_amount += amt
+    return unposted
+
+
+def _find_line(db: Session, org_id, project_id, cost_code_id) -> BudgetLine | None:
+    """The approved budget line for this project + cost code, or None."""
+    q = (select(BudgetLine).join(Budget, Budget.id == BudgetLine.budget_id)
+         .where(Budget.organization_id == org_id, Budget.project_id == project_id,
+                Budget.status == ApprovalStatus.APPROVED, BudgetLine.cost_code_id == cost_code_id)
+         .with_for_update())
+    return db.scalar(q)
+
+
 def group(pairs) -> dict[uuid.UUID, Decimal]:
     out: dict[uuid.UUID, Decimal] = defaultdict(lambda: Decimal("0"))
     for cc, amt in pairs:

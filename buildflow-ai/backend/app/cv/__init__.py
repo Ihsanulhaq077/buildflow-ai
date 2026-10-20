@@ -1,0 +1,1 @@
+"""Computer Vision module: PPE detection and site photo analysis."""

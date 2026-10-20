@@ -9,9 +9,10 @@ from app import rbac
 from app.audit import log_action
 from app.db import get_db
 from app.boq.models import DEFAULT_UNITS, Unit
-from app.deps import get_current_user, org_scoped, require_permission
+from app.dashboards.templates import seed_role_dashboards
+from app.deps import get_current_user, get_owned, org_scoped, require_permission
 from app.models import AuditLog, Organization, Permission, Role, User
-from app.schemas import AuditOut, Login, Refresh, RegisterOrg, TokenPair, UserCreate, UserOut
+from app.schemas import AuditOut, Login, Refresh, RegisterOrg, TokenPair, UserCreate, UserOut, UserRoleUpdate
 from app.security import (create_access_token, create_refresh_token, decode_token, hash_password,
                           verify_password)
 
@@ -59,6 +60,14 @@ def register_organization(body: RegisterOrg, request: Request, db: Session = Dep
                  password_hash=hash_password(body.password), role_id=roles["OWNER"].id)
     db.add(owner)
     db.commit()
+    # Every role gets its own cockpit so a team member lands on a dashboard built for
+    # their responsibilities the first time they sign in.
+    try:
+        seed_role_dashboards(db, org.id, roles, owner=owner)
+    except Exception:  # never block registration on dashboard seeding
+        db.rollback()
+        log_action(db, action="dashboards.seed_failed", org_id=org.id, user_id=owner.id,
+                   entity="organization", entity_id=org.id, request=request)
     log_action(db, action="org.register", org_id=org.id, user_id=owner.id, entity="organization",
                entity_id=org.id, request=request)
     return _tokens(owner)
@@ -122,6 +131,20 @@ def create_user(body: UserCreate, request: Request,
     log_action(db, action="user.create", org_id=actor.organization_id, user_id=actor.id, entity="user",
                entity_id=u.id, request=request, detail={"role": role.name})
     return _user_out(u)
+
+
+@users.patch("/{user_id}/role", response_model=UserOut)
+def update_user_role(user_id: uuid.UUID, body: UserRoleUpdate, request: Request,
+                     actor: User = Depends(require_permission("users.manage")), db: Session = Depends(get_db)):
+    target = get_owned(db, User, user_id, actor)
+    role = db.scalar(select(Role).where(Role.organization_id == actor.organization_id, Role.name == body.role_name))
+    if not role:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Unknown role")
+    target.role_id = role.id
+    db.commit()
+    log_action(db, action="user.role_change", org_id=actor.organization_id, user_id=actor.id, entity="user",
+               entity_id=target.id, request=request, detail={"new_role": role.name})
+    return _user_out(target)
 
 
 @audit.get("", response_model=list[AuditOut])

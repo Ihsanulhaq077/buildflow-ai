@@ -5,12 +5,22 @@ from fastapi.responses import JSONResponse
 
 from app.boq.routes import router as boq_router
 from app.budgets.routes import router as budgets_router
+from app.dashboards.routes import router as dashboards_router
 from app.inventory.routes import router as inventory_router
 from app.procurement.orders import router as orders_router
 from app.procurement.routes import router as procurement_router
 from app.dailylogs.routes import router as dailylogs_router
 from app.labour.routes import router as labour_router
 from app.projects.routes import router as projects_router
+from app.documents.routes import router as documents_router
+from app.rag.routes import router as rag_router
+from app.ai_assistant.routes import router as ai_assistant_router
+from app.ml.routes import router as ml_router
+from app.cv.routes import router as cv_router
+from app.commercial.routes import router as commercial_router
+from app.tasks.routes import router as tasks_router
+from app.expenses.routes import router as expenses_router
+from app.datapurge.routes import router as datapurge_router
 from app.routers import audit, auth, users
 
 logging.basicConfig(level=logging.INFO, format='{"ts":"%(asctime)s","level":"%(levelname)s","msg":"%(message)s"}')
@@ -28,6 +38,16 @@ app.include_router(procurement_router)
 app.include_router(orders_router)
 app.include_router(labour_router)
 app.include_router(dailylogs_router)
+app.include_router(documents_router)
+app.include_router(rag_router)
+app.include_router(ai_assistant_router)
+app.include_router(dashboards_router)
+app.include_router(ml_router)
+app.include_router(cv_router)
+app.include_router(commercial_router)
+app.include_router(tasks_router)
+app.include_router(expenses_router)
+app.include_router(datapurge_router)
 
 
 @app.get("/health", tags=["system"])

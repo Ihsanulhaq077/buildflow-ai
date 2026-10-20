@@ -35,6 +35,56 @@ Accounting → AI Analysis into a single source of truth.
 | Labour Cost Summary | ✅ | Labour |
 | Daily Logs (create, submit, reopen, PDF) | ✅ | Daily Logs |
 | Missing Daily Reports | ✅ | Daily Logs |
+| Dashboards (role-based, widgets, analytics) | ✅ | Phase 9 |
+| AI Assistant (chat, tool calling, RAG Q&A) | ✅ | Phase 8 |
+
+## New in This Merge: AI Assistant & Dashboards
+
+The AI Assistant and Dashboards modules have been merged into the core `buildflow-ai/`
+application — no separate projects, no blind copying. Each was analyzed, integrated, and
+tested against the unified codebase.
+
+### Phase 8 — AI Assistant (complete)
+
+A chat interface with tool calling that lets users ask questions and execute actions
+naturally:
+
+- **Sessions & messages** — persistent chat history per session, optional project context
+- **20+ integrated tools** covering every ERP module: RAG document search, projects, BOQ,
+  budgets, procurement (requisitions, POs, quotes, GRN), inventory, labour, daily logs,
+  and document access
+- **Permission-aware responses** — every tool result is filtered by the caller's role and
+  organization; the assistant never exposes data outside the user's tenant
+- **RAG integration** — semantic search over uploaded documents with embedding-based
+  retrieval
+
+Key files: `app/ai_assistant/{models.py, schemas.py, service.py, routes.py}`, migration
+`0008_phase_8_ai_assistant.py`.
+
+### Phase 9 — Dashboards (complete)
+
+Role-based dashboards with a pluggable widget system and an analytics data layer:
+
+- **Dashboard CRUD** — role-based templates and custom dashboards, with public/shareable
+  views, default dashboards per role, and a layout config
+- **Widget system** — metric, chart, table, list, progress, gauge, timeline, map, calendar
+  widgets with data sources (project, budget, procurement, inventory, labour, dailylog
+  summaries) and chart-type choices (bar, line, pie, donut, scatter, area, heatmap, etc.)
+- **Dashboard data endpoint** — `GET /dashboards/{id}/data` returns every widget with its
+  live aggregated data, rendered with the widget's config and filters
+- **Access control** — dashboard-level permissions (view/edit/share) for users and roles
+
+Key files: `app/dashboards/{models.py, schemas.py, service.py, routes.py}`, migration
+`0009_phase_9_dashboards.py`.
+
+### What changed during the merge
+
+- One shared permission system (`app/deps.py`) — no separate auth stack for either module
+- One data access path (`app.db.get_db`, `org_scoped`) — zero cross-tenant leakage
+- One Alembic history (`0008_phase_8_ai_assistant.py` → `0009_phase_9_dashboards.py`),
+  imported via `app/all_models.py`
+- No duplicate models, routes, or business logic — each module reuses existing ERP
+  services rather than re-implementing them
 
 ## Technology Stack
 
@@ -96,6 +146,44 @@ pytest -v
 - **Attendance:** `/attendance-sheets`, `/attendance-sheets/{id}/entries`, `/attendance-sheets/{id}/submit`, `/attendance-sheets/{id}/approve`, `/labour/cost-summary`
 - **Daily Logs:** `/daily-logs`, `/daily-logs/{id}/submit`, `/daily-logs/{id}/reopen`, `/daily-logs/{id}/pdf`, `/daily-logs/missing`
 - **Health:** `/health`
+
+### Phase 8 — AI Assistant
+- **Sessions:** `POST /ai/sessions` (create), `GET /ai/sessions` (list)
+- **Session detail:** `GET /ai/sessions/{id}`, `DELETE /ai/sessions/{id}`
+- **Messages:** `GET /ai/sessions/{id}/messages`
+- **Chat:** `POST /ai/chat` (send message, get response)
+- **Tools:** `POST /ai/tools/execute` (tool execution, RAG search, project ops, etc.)
+
+### Phase 9 — Dashboards
+- **Dashboards:** `GET /dashboards` (list), `POST /dashboards` (create)
+- **Dashboard CRUD:** `GET /dashboards/{id}`, `PUT /dashboards/{id}`, `DELETE /dashboards/{id}`
+- **Dashboard data:** `GET /dashboards/{id}/data` (widgets + live aggregation)
+- **Widgets:** `GET /dashboards/{id}/widgets`, `POST /dashboards/{id}/widgets` (add)
+- **Widget CRUD:** `PUT /dashboards/{id}/widgets/{wid}`, `DELETE /dashboards/{id}/widgets/{wid}`
+
+### Phase 10 — ML Forecasting
+- **Cost Overrun Prediction:** `POST /ml/cost-overrun` (predict project cost overruns)
+- **Delay Prediction:** `POST /ml/delay` (predict project delays in days)
+- **Material Forecast:** `POST /ml/material` (predict material quantity needs)
+- **Batch Predictions:** `POST /ml/batch` (run multiple forecast types)
+- **Risk Assessment:** `GET /ml/risk/{project_id}` (comprehensive project risk)
+- **Forecast History:** `GET /ml/forecasts` (list), `GET /ml/forecasts/{id}` (get)
+- **Model Management:** `POST /ml/models`, `GET /ml/models`, `POST /ml/models/{name}/{v}/activate`
+- **Statistics:** `GET /ml/stats`
+
+### Phase 11 — Computer Vision
+- **Detection Results:** `POST /cv/detections`, `GET /cv/detections/{id}`, `GET /cv/detections`
+- **Site Photos:** `POST /cv/photos`, `GET /cv/photos/{id}`, `GET /cv/photos`
+- **Photo Analysis:** `POST /cv/photos/{id}/analyze`, `GET /cv/photos/{id}/analysis`
+- **PPE Registration:** `POST /cv/ppe-registrations`, `GET /cv/ppe-registrations/{role}`, `GET /cv/ppe-registrations`
+- **Statistics:** `GET /cv/stats`
+
+### Phase 12 — Commercial
+- **Subscriptions:** `POST /commercial/subscription`, `GET /commercial/subscription`
+- **Onboarding:** `POST /commercial/onboarding`, `GET /commercial/onboarding/complete`
+- **Billing:** `POST /commercial/billing`, `GET /commercial/billing`, `PUT /commercial/billing/card`
+- **System Events:** `POST /commercial/events`, `GET /commercial/events`, `POST /commercial/events/{id}/resolve`
+- **Statistics:** `GET /commercial/stats`
 
 ## Multi-Tenant Security
 
